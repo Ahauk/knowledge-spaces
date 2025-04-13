@@ -1,0 +1,14 @@
+:root {
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  --bg: #ffffff;
+  --bg-alt: #f7f8fa;
+  --text: #111827;
+  --text-light: #6b7280;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --border: #e5e7eb;
+
+  --radius: 8px;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
