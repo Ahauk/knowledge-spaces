@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
+import { Canvas } from './components/Canvas';
 import CardDetail from './pages/CardDetail';
-import Home from './pages/Home';
-import KnowledgeSpace from './pages/KnowledgeSpace';
+import { Home } from './pages/Home';
 
 function App() {
   return (
@@ -11,8 +11,8 @@ function App() {
         element={<Home />}
       />
       <Route
-        path='/space'
-        element={<KnowledgeSpace />}
+        path='/canvas'
+        element={<Canvas />}
       />
       <Route
         path='/card/:id'

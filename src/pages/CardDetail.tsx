@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import ContentCard from '../components/ContentCard';
+import Card from '../components/Card';
 import { getCardById, getRelatedCards } from '../services/api';
 
 function CardDetail() {
@@ -13,7 +13,7 @@ function CardDetail() {
   useEffect(() => {
     if (id) {
       getCardById(id).then(setCard);
-      getRelatedCards(id).then(setRelatedCards);
+      getRelatedCards(Number(id)).then(setRelatedCards);
     }
   }, [id]);
 
@@ -35,7 +35,7 @@ function CardDetail() {
               title: string;
               description: string;
             }) => (
-              <ContentCard
+              <Card
                 key={relatedCard.id}
                 card={relatedCard}
               />

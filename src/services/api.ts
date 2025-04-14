@@ -33,12 +33,11 @@ async function fetchJson(url: string) {
  * }
  */
 export async function getCards(
-  page: number
+  page?: number
 ): Promise<{ id: string; title: string; description: string }[]> {
-  const response = await fetchJson(`${API_URLS.cards}?page=${page}`);
-  const data = await response.json();
+  const data = await fetchJson(`${API_URLS.cards}?page=${page}`);
   // Devuelve el array de resultados (tarjetas)
-  return data.cards;
+  return data.cards || [];
 }
 
 /**
@@ -52,6 +51,6 @@ export async function getCardById(id: string) {
  * Obtiene las tarjetas relacionadas para la tarjeta dada.
  * Espera que la respuesta sea un array de tarjetas.
  */
-export async function getRelatedCards(id: string) {
+export const getRelatedCards = async (id: number) => {
   return fetchJson(`${API_URLS.cards}${id}/related_cards/`);
-}
+};
