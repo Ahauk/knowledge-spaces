@@ -1,18 +1,25 @@
-const API_URLS = {
+import { Card, mockCards, mockRelatedCards } from './mock';
+
+/* const API_URLS = {
   cards: '/proxy/api/cards/',
   notes: '/proxy/api/notes/',
-};
+}; */
 
 /**
  * Realiza una petición GET y retorna el JSON, o lanza un error si la respuesta no es exitosa.
  */
 
-async function fetchJson(url: string) {
+/* async function fetchJson(url: string) {
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
     },
   });
+
+  console.log('URL', url);
+  console.log('Response status', response.status);
+  console.log('Raw response', await response.clone().text());
+
   if (!response.ok) {
     const errorDetail = await response.text();
     throw new Error(
@@ -20,9 +27,9 @@ async function fetchJson(url: string) {
     );
   }
   return response.json();
-}
+} */
 
-export async function getCards(page?: number): Promise<
+/* export async function getCards(page?: number): Promise<
   {
     id: string;
     content?: {
@@ -35,11 +42,20 @@ export async function getCards(page?: number): Promise<
   }[]
 > {
   const data = await fetchJson(`${API_URLS.cards}?page=${page}`);
-  // Devuelve el array de resultados (tarjetas)
   return data.results ?? [];
+} */
+
+// Mock functions mientras se reestab
+
+export async function getCards(): Promise<Card[]> {
+  return mockCards;
 }
 
-export async function getCardById(id: string): Promise<{
+export async function getRelatedCards(cardId: number): Promise<Card[]> {
+  return mockRelatedCards[cardId] || [];
+}
+
+/* export async function getCardById(id: string): Promise<{
   id: string;
   content?: {
     title?: string;
@@ -51,4 +67,4 @@ export async function getCardById(id: string): Promise<{
 }> {
   const data = await fetchJson(`${API_URLS.cards}${id}/`);
   return data;
-}
+} */
