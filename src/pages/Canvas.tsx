@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
+import { ConnectionLayer } from '../components/ConnectionLayer';
 import { getCards } from '../services/api';
 import { Card as CardType } from '../services/mock';
 import { useCardStore } from '../store/useCardStore';
@@ -77,6 +78,13 @@ export const Canvas = () => {
     }
   };
 
+  const connections = cards.flatMap((card) =>
+    (card.related ?? []).map((relatedId) => ({
+      from: String(card.id),
+      to: String(relatedId),
+    }))
+  );
+
   return (
     <div className='min-h-screen w-full bg-black text-white flex flex-col'>
       <header className='relative w-full flex justify-between items-center px-6 py-4 bg-black z-10'>
@@ -127,6 +135,10 @@ export const Canvas = () => {
         style={{ transform: 'none' }}
       >
         <div className='w-[4000px] h-[4000px] bg-neutral-900 relative'>
+          <ConnectionLayer
+            positions={positions}
+            connections={connections}
+          />
           <DndContext
             onDragEnd={handleDragEnd}
             key={animationKey}

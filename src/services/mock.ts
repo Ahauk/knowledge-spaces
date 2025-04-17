@@ -7,6 +7,7 @@ export interface Card {
     author: string;
     url?: string;
   };
+  related?: number[];
 }
 
 export const mockCards = [
@@ -20,6 +21,7 @@ export const mockCards = [
       author: 'Elena Navarro',
       url: 'https://frontendtips.dev/optimizar',
     },
+    related: [102, 103],
   },
   {
     id: 102,
@@ -30,6 +32,7 @@ export const mockCards = [
         '→ Menos bordes\n→ Espaciado generoso\n→ Animaciones sutiles',
       author: 'Víctor S.',
     },
+    related: [104],
   },
   {
     id: 103,
@@ -40,6 +43,7 @@ export const mockCards = [
       author: 'Equipo Sublime',
       url: 'https://github.com/sublime/knowledge-ui',
     },
+    related: [],
   },
   {
     id: 104,
@@ -50,6 +54,7 @@ export const mockCards = [
         'Detectar relaciones semánticas y visualizarlas automáticamente. ¡Boom!',
       author: 'Samurai Dev',
     },
+    related: [105],
   },
   {
     id: 105,
@@ -60,6 +65,7 @@ export const mockCards = [
         '✅ Diseño validado\n✅ Componentes limpios\n✅ Feedback temprano',
       author: 'Marcela Ruiz',
     },
+    related: [106],
   },
   {
     id: 106,
@@ -71,6 +77,7 @@ export const mockCards = [
       author: 'Ariel López',
       url: 'https://medium.com/ds-humanos',
     },
+    related: [101],
   },
   {
     id: 107,
@@ -81,6 +88,7 @@ export const mockCards = [
         '¿Podríamos sincronizar arrastres con WebSockets y mantener estado compartido?',
       author: 'Héctor Bravo',
     },
+    related: [108, 109],
   },
   {
     id: 108,
@@ -91,6 +99,7 @@ export const mockCards = [
         'Esto podría ser una nota rápida para no olvidar algo importante.',
       author: 'Yo mismo',
     },
+    related: [],
   },
   {
     id: 109,
@@ -102,6 +111,7 @@ export const mockCards = [
       author: 'Estudio Motion',
       url: 'https://uimicro.com/articulo',
     },
+    related: [],
   },
   {
     id: 110,
@@ -112,6 +122,7 @@ export const mockCards = [
       author: 'ViteJS',
       url: 'https://vitejs.dev/',
     },
+    related: [],
   },
   {
     id: 111,
@@ -121,6 +132,7 @@ export const mockCards = [
       description: 'Añadir paginación real al backend cuando esté disponible',
       author: 'Dev team',
     },
+    related: [],
   },
   {
     id: 112,
@@ -130,6 +142,7 @@ export const mockCards = [
       description: 'Agregar snapping, zoom inteligente y agrupación automática',
       author: 'Víctor',
     },
+    related: [101, 107],
   },
 ];
 
