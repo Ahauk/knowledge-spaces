@@ -1,27 +1,21 @@
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
-import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { getCards } from '../services/api';
+import { Card as CardType } from '../services/mock';
 import { useCardStore } from '../store/useCardStore';
-
-type CardType = {
-  id: string;
-  content?: {
-    title?: string;
-    url?: string;
-    author?: string;
-    description?: string;
-  };
-  card_type: string;
-};
 
 export const Canvas = () => {
   const [cards, setCards] = useState<CardType[]>([]);
   const [showLine, setShowLine] = useState(true);
-  const { positions, setPosition } = useCardStore();
+  const [animationKey, setAnimationKey] = useState(0);
+
+  const positions = useCardStore((state) => state.positions);
+  const setPosition = useCardStore((state) => state.setPosition);
+  const initializePosition = useCardStore((state) => state.initializePosition);
+  const resetPositions = useCardStore((state) => state.resetPositions);
 
   const getCardColor = (index: number) => {
     const colors = [
@@ -36,60 +30,88 @@ export const Canvas = () => {
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const data = await getCards(1); // Página 1 por ahora
+        const data = await getCards();
         setCards(data);
       } catch (error) {
         console.error('Error al obtener tarjetas:', error);
       }
     };
-
     fetchCards();
   }, []);
 
   useEffect(() => {
     const canvas = document.getElementById('canvas-scroll');
-
     const handleScroll = () => {
       if (!canvas) return;
       const top = canvas.scrollTop;
       setShowLine(top < 10);
     };
-
     canvas?.addEventListener('scroll', handleScroll);
     return () => canvas?.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    cards.forEach((card, index) => {
+      const id = String(card.id);
+      const defaultPos = {
+        x: 400 * (index % 4) + 60,
+        y: 300 * Math.floor(index / 4) + 60,
+      };
+      initializePosition(id, defaultPos);
+    });
+  }, [cards, initializePosition]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { delta, active } = event;
-    const current = positions[active.id];
+    const id = String(active.id);
+    const current = positions[id];
 
-    if (current) {
-      setPosition(active.id as string, {
-        x: current.x + delta.x,
-        y: current.y + delta.y,
-      });
+    if (current && delta) {
+      const newX = current.x + delta.x;
+      let newY = current.y + delta.y;
+
+      const MIN_Y = 100;
+      if (newY < MIN_Y) newY = MIN_Y;
+
+      setPosition(id, { x: newX, y: newY });
     }
   };
 
   return (
-    <motion.div
-      className='min-h-screen w-full bg-black text-white flex flex-col'
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-    >
-      {/* Top Bar */}
+    <div className='min-h-screen w-full bg-black text-white flex flex-col'>
       <header className='relative w-full flex justify-between items-center px-6 py-4 bg-black z-10'>
-        <h2 className='text-xl font-semibold tracking-tight'>Canvas</h2>
         <Link
           to='/'
           className='flex items-center gap-2 text-sm text-gray-300 hover:text-white transition'
-          style={{ color: '#34d399' }}
+          style={{ color: '#fff' }}
         >
           <ArrowLeft size={16} /> Volver al Home
         </Link>
-
-        {/* Línea difuminada debajo */}
+        <div className='flex items-center gap-4'>
+          <h2
+            className='text-xl font-semibold tracking-tight'
+            style={{ color: '#34d399' }}
+          >
+            Canvas
+          </h2>
+        </div>
+        <button
+          onClick={() => {
+            resetPositions();
+            cards.forEach((card, index) => {
+              const id = String(card.id);
+              const defaultPos = {
+                x: 400 * (index % 4) + 60,
+                y: 300 * Math.floor(index / 4) + 60,
+              };
+              initializePosition(id, defaultPos);
+            });
+            setAnimationKey((prev) => prev + 1);
+          }}
+          className='text-sm text-white-400 hover:text-white-200 underline transition'
+        >
+          Reset Canvas
+        </button>
         <div
           className={`absolute bottom-0 left-0 w-full bg-gradient-to-r from-transparent via-green-400 to-transparent transition-opacity duration-300 pointer-events-none ${
             showLine ? 'opacity-50' : 'opacity-0'
@@ -99,23 +121,24 @@ export const Canvas = () => {
         />
       </header>
 
-      {/* Canvas Area */}
       <div
         id='canvas-scroll'
         className='overflow-scroll flex-1 relative'
+        style={{ transform: 'none' }}
       >
         <div className='w-[4000px] h-[4000px] bg-neutral-900 relative'>
-          <DndContext onDragEnd={handleDragEnd}>
+          <DndContext
+            onDragEnd={handleDragEnd}
+            key={animationKey}
+          >
             {cards.map((card, index) => {
-              const pos = positions[card.id] ?? {
-                x: 150 + index * 250,
-                y: 150 + (index % 3) * 200,
-              };
-
+              const id = String(card.id);
+              const pos = positions[id] ?? { x: 0, y: 0 };
               return (
                 <Card
-                  key={card.id}
-                  id={parseInt(card.id)}
+                  key={id}
+                  id={id}
+                  index={index}
                   title={card.content?.title ?? 'Sin título'}
                   type={card.card_type}
                   description={card.content?.description}
@@ -128,11 +151,8 @@ export const Canvas = () => {
               );
             })}
           </DndContext>
-          {/*  <pre className='text-green-300 text-xs'>
-              {JSON.stringify(cards, null, 2)}
-            </pre> */}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
