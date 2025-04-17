@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { Canvas } from './pages/Canvas';
+import { Feed } from './pages/Feed';
 import { Home } from './pages/Home';
 
 function App() {
@@ -12,6 +13,10 @@ function App() {
       <Route
         path='/canvas'
         element={<Canvas />}
+      />
+      <Route
+        path='/feed'
+        element={<Feed />}
       />
     </Routes>
   );
