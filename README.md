@@ -1,6 +1,6 @@
-# Knowledge Spaces - React + TypeScript + Vite
+# 🧠 Knowledge Spaces – React + TypeScript + Vite
 
-This project is a React application built with TypeScript and Vite. It provides a fast and modern development environment with hot module replacement (HMR) and ESLint integration for code quality.
+Este proyecto es una aplicación web que permite visualizar, explorar y conectar tarjetas de conocimiento en un canvas dinámico, con funcionalidades de **drag & drop**, relaciones visuales y navegación por un feed de contenido. Construido con **React 19**, **TypeScript** y **Vite**.
 
 ## Approach and Key Decisions
 
@@ -10,73 +10,83 @@ This project is a React application built with TypeScript and Vite. It provides 
 - **Component-Based Architecture**: The application is structured with reusable and modular components to ensure scalability and maintainability.
 - **Error Handling**: Implemented centralized error handling in API calls to provide meaningful feedback to users.
 
-## How to Run the Application Locally
+## 🚀 ¿Cómo ejecutar el proyecto localmente?
 
-1. **Clone the Repository**:
+1. **Clona el repositorio**:
 
    ```bash
    git clone https://github.com/your-username/knowledge-spaces.git
    cd knowledge-spaces
    ```
 
-2. **Install Dependencies**:
-   Make sure you have Node.js installed, then run:
+2. **Instala las dependencias**:
+   Asegúrate de tener instalado Node.js (v18+ recomendado):
 
    ```bash
    npm install
    ```
 
-3. **Start the Development Server**:
+3. **Inicia el servidor de desarrollo**:
 
    ```bash
    npm run dev
    ```
 
-4. **Access the Application**:
-   Open your browser and navigate to `http://localhost:5173`.
+4. **Abre la aplicación en tu navegador**:
+   Abre una pestaña de tu browser y navega a esta dirección `http://localhost:5173`.
 
 ## Performance Optimizations
 
-- **Code Splitting**: Leveraged Vite's built-in support for code splitting to load only the necessary JavaScript for each page.
-- **Lazy Loading**: Implemented lazy loading for components and assets to improve initial load times.
-- **Proxy for API Calls**: Configured a proxy to reduce latency and avoid CORS issues during development.
-- **Optimized Builds**: Used Vite's production build optimizations to generate smaller and faster assets.
+- **Alturas Dinámicas**: Se usa `ResizeObserver` para ajustar el layout según el contenido.
+- **Memoización**: Se evita recalcular posiciones que ya existen.
+- **Proxy de API**: Configurado en `vite.config.ts` para evitar CORS en desarrollo.
+- **Carga bajo demanda**: Las tarjetas se obtienen por página y se agregan sin sobrecarga inicial.
 
-## Challenges Faced and Solutions
+## Retos Encontrados y Soluciones
 
 1. **CORS Issues**:
 
-   - **Challenge**: The backend API did not include the `Access-Control-Allow-Origin` header, causing CORS errors.
-   - **Solution**: Configured a proxy in `vite.config.ts` to route API requests through the development server, bypassing CORS restrictions.
+   - **Problema**: La API del backend no incluyó el encabezado `Access-Control-Allow-Origin` lo que causó errores de CORS.
+   - **Solución**: Se configuró un proxy en `vite.config.ts` para enrutar las solicitudes de la API a través del servidor de desarrollo, evitando las restricciones de CORS.
 
-2. **Error Handling**:
-   - **Challenge**: Ensuring meaningful error messages for API failures.
-   - **Solution**: Centralized error handling in the `fetchJson` function to provide consistent feedback.
+2. **Empalme de tarjetas**:
+
+   - **Problema**: Las tarjetas de distinta altura se montaban unas sobre otras.
+   - **Solución**: Se usó `ResizeObserver` para medir cada tarjeta y calcular su posición real con espacio vertical.
+
+3. **Drag and drop inconsistente**:
+
+   - **Problema**: Las tarjetas se saltaban o reiniciaban tras arrastrar.
+   - **Solución**: Se sincronizó correctamente con Zustand y se actualiza solo al finalizar el arrastre.
+
+4. **Paginación real**:
+   - **Problema**: Se cargaban todas las tarjetas en un solo request.
+   - **Solución**: Se usó el campo `next` del backend para cargar página por página.
 
 ## What I Would Improve with More Time
 
-- **Testing**: Add unit tests and integration tests to ensure code reliability and catch regressions.
-- **Accessibility**: Improve the application's accessibility to meet WCAG standards.
-- **Documentation**: Expand the documentation to include detailed API references and component usage examples.
-- **State Management**: Introduce a state management library like Redux or Zustand for better handling of global state.
-- **CI/CD Pipeline**: Set up a continuous integration and deployment pipeline to automate testing and deployment.
+- **Pruebas automáticas**: Unitarias y de integración.
+- **Accesibilidad (a11y)**: Cumplimiento con WCAG.
+- **Edición inline**: Permitir modificar campos directamente en la tarjeta.
+- **Agrupación de tarjetas**: Visualización de clústers o agrupaciones temáticas.
+- **CI/CD Pipeline**: Automatización de pruebas y despliegue continuo.
 
-## Expanding the ESLint Configuration
+## Expansión de la Configuración de ESLint
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Si deseas mejorar la calidad del código en producción, te recomendamos activar reglas que entienden los tipos de TypeScript:
 
 ```js
 export default tseslint.config({
   extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
+    // Elimina ...tseslint.configs.recommended y reemplazalo con esto
     ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
+    // Alternativamente, usa esto para reglas más estrictas
     ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
+    // Opcionalmente, agrega esto para reglas de estilo
     ...tseslint.configs.stylisticTypeChecked,
   ],
   languageOptions: {
-    // other options...
+    // otras opciones...
     parserOptions: {
       project: ['./tsconfig.node.json', './tsconfig.app.json'],
       tsconfigRootDir: import.meta.dirname,
@@ -85,7 +95,7 @@ export default tseslint.config({
 });
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules.
+También puedes instalar [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) y [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) para reglas específicas de React.
 
 ```js
 // eslint.config.js
@@ -94,15 +104,28 @@ import reactDom from 'eslint-plugin-react-dom';
 
 export default tseslint.config({
   plugins: {
-    // Add the react-x and react-dom plugins
+    // Agrega los plugins react-x and react-dom
     'react-x': reactX,
     'react-dom': reactDom,
   },
   rules: {
-    // other rules...
-    // Enable its recommended typescript rules
+    // Otras reglas...
+    // Habilita sus reglas recomendadas de TypeScript
     ...reactX.configs['recommended-typescript'].rules,
     ...reactDom.configs.recommended.rules,
   },
 });
 ```
+
+## Estructura del Proyecto
+
+├── components/ # Componentes reutilizables como Card y ConnectionLayer
+├── pages/ # Vistas principales: Canvas.tsx, Feed.tsx
+├── services/ # Funciones para llamadas a la API
+├── store/ # Estado global con Zustand
+├── styles/ # Estilos globales y Tailwind
+└── vite.config.ts # Configuración de Vite con proxy incluido
+
+## Autor
+
+Desarrollado por `@Ahauk` como parte de un reto técnico de frontend.
