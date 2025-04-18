@@ -1,24 +1,14 @@
-import { Card, mockCards, mockRelatedCards } from './mock';
-
-/* const API_URLS = {
+const API_URLS = {
   cards: '/proxy/api/cards/',
   notes: '/proxy/api/notes/',
-}; */
+};
 
-/**
- * Realiza una petición GET y retorna el JSON, o lanza un error si la respuesta no es exitosa.
- */
-
-/* async function fetchJson(url: string) {
+async function fetchJson(url: string) {
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
     },
   });
-
-  console.log('URL', url);
-  console.log('Response status', response.status);
-  console.log('Raw response', await response.clone().text());
 
   if (!response.ok) {
     const errorDetail = await response.text();
@@ -26,45 +16,75 @@ import { Card, mockCards, mockRelatedCards } from './mock';
       `Error en la petición a ${url}: ${response.status} ${errorDetail}`
     );
   }
+
   return response.json();
-} */
-
-/* export async function getCards(page?: number): Promise<
-  {
-    id: string;
-    content?: {
-      title?: string;
-      url?: string;
-      author?: string;
-      description?: string;
-    };
-    card_type: string;
-  }[]
-> {
-  const data = await fetchJson(`${API_URLS.cards}?page=${page}`);
-  return data.results ?? [];
-} */
-
-// Mock functions mientras se reestab
-
-export async function getCards(): Promise<Card[]> {
-  return mockCards;
 }
 
-export async function getRelatedCards(cardId: number): Promise<Card[]> {
-  return mockRelatedCards[cardId] || [];
-}
-
-/* export async function getCardById(id: string): Promise<{
+export interface CardAPI {
   id: string;
+  card_type: string;
+  related_cards?: number[];
   content?: {
     title?: string;
     url?: string;
     author?: string;
     description?: string;
   };
-  card_type: string;
+}
+
+let cardsCache: CardAPI[] | null = null;
+
+function buildUrl(input: number | string): string {
+  if (typeof input === 'number') {
+    return `${API_URLS.cards}?page=${input}`;
+  }
+  if (input.startsWith('/proxy') || input.startsWith('http')) {
+    return input;
+  }
+  return `/proxy${input}`;
+}
+
+export async function getCards(input: number | string = 1): Promise<{
+  cards: CardAPI[];
+  next: string | null;
 }> {
+  const url = buildUrl(input);
+  const response = await fetchJson(url);
+
+  return {
+    cards: response.results ?? [],
+    next: response.next ?? null,
+  };
+}
+
+export async function getCardById(id: string): Promise<CardAPI> {
   const data = await fetchJson(`${API_URLS.cards}${id}/`);
   return data;
-} */
+}
+
+export async function getAllCards(): Promise<CardAPI[]> {
+  if (cardsCache) return cardsCache;
+
+  let page = 1;
+  const allResults: CardAPI[] = [];
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetchJson(`${API_URLS.cards}?page=${page}`);
+
+    if (response?.results) {
+      allResults.push(...response.results);
+      hasMore = Boolean(response.next);
+      page += 1;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  cardsCache = allResults;
+  return allResults;
+}
+
+export function clearCardsCache() {
+  cardsCache = null;
+}
