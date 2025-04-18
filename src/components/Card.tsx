@@ -1,7 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
-import { Pencil, Trash2 } from 'lucide-react';
 import { forwardRef, useEffect, useRef } from 'react';
 import { useCardStore } from '../store/useCardStore';
 
@@ -15,28 +14,10 @@ type Props = {
   author: string;
   x: number;
   y: number;
-  color?: string;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
 };
 
 export const Card = forwardRef<HTMLDivElement, Props>(
-  (
-    {
-      id,
-      title,
-      type,
-      description,
-      url,
-      author,
-      x,
-      y,
-      color = 'bg-yellow-100',
-      onEdit,
-      onDelete,
-    },
-    ref
-  ) => {
+  ({ id, title, type, description, url, author, x, y }, ref) => {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
       id,
     });
@@ -76,22 +57,22 @@ export const Card = forwardRef<HTMLDivElement, Props>(
           if (typeof ref === 'function') {
             ref(node);
           } else if (ref && typeof ref === 'object') {
-            (ref as React.MutableRefObject<HTMLDivElement | null>).current =
-              node;
+            ref.current = node;
           }
         }}
         style={style}
-        className={`absolute ${color} rounded-xl shadow-lg w-64 transition-transform hover:scale-[1.01] select-text`}
+        className={`absolute bg-cardBackground rounded-cardRounded shadow-postit w-64 transition-transform select-text`}
       >
         {/* Header */}
         <div
           {...listeners}
           {...attributes}
-          className='cursor-grab px-4 py-2 border-b border-black/10 bg-black/5 rounded-t-xl select-none'
+          className='cursor-grab px-5 pt-5 select-none rounded-t-[32px]'
         >
-          <h3 className='text-base font-semibold text-gray-900 leading-tight break-words'>
+          <h3 className='text-[14px] font-semibold text-gray-500 leading-snug break-words'>
             {title}
           </h3>
+          <div className='h-px bg-gray-200 my-2' />
           <p className='text-[11px] font-medium text-green-700 uppercase tracking-wider flex items-center gap-1'>
             <span>{getIconForType(type)}</span>
             {type}
@@ -99,11 +80,9 @@ export const Card = forwardRef<HTMLDivElement, Props>(
         </div>
 
         {/* Content */}
-        <div className='px-4 py-3 flex flex-col gap-2 text-left'>
+        <div className='px-5 py-4 flex flex-col gap-3 text-left text-gray-800 text-[13px] leading-snug'>
           {description && (
-            <p className='text-sm text-gray-700 whitespace-pre-wrap break-words'>
-              {description}
-            </p>
+            <p className='whitespace-pre-wrap break-words'>{description}</p>
           )}
 
           {url && (
@@ -111,35 +90,15 @@ export const Card = forwardRef<HTMLDivElement, Props>(
               href={url}
               target='_blank'
               rel='noopener noreferrer'
-              className='text-xs text-blue-700 underline break-all flex items-center gap-1'
+              className='text-[12px] text-blue-700 underline break-all flex items-center gap-1'
             >
               <span>🔗</span>
               {url}
             </a>
           )}
 
-          <div className='border-t pt-2 mt-2 flex items-center justify-between'>
-            <p className='text-xs text-gray-500 italic'>Autor: {author}</p>
-            <div className='flex gap-1'>
-              <button
-                onClick={() => onEdit?.(id)}
-                className='p-1 rounded-full bg-white/80 hover:bg-white shadow transition'
-              >
-                <Pencil
-                  size={14}
-                  className='text-gray-700'
-                />
-              </button>
-              <button
-                onClick={() => onDelete?.(id)}
-                className='p-1 rounded-full bg-white/80 hover:bg-white shadow transition'
-              >
-                <Trash2
-                  size={14}
-                  className='text-red-600'
-                />
-              </button>
-            </div>
+          <div className='border-t border-gray-200 pt-2 mt-2 flex items-center justify-between'>
+            <p className='text-[11px] text-gray-500 italic'>Autor: {author}</p>
           </div>
         </div>
       </motion.div>

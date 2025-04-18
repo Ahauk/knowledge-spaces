@@ -7,9 +7,9 @@ import { ConnectionLayer } from '../components/ConnectionLayer';
 import { CardAPI } from '../services/api';
 import { useCardStore } from '../store/useCardStore';
 
-const CARDS_PER_ROW = 10;
-const CARD_SPACING_Y = 25;
-const CARD_OFFSET_X = 300;
+const CARDS_PER_ROW = 6;
+const CARD_SPACING_Y = 300;
+const CARD_OFFSET_X = 350;
 
 export const Canvas = () => {
   const [cards, setCards] = useState<CardAPI[]>([]);
@@ -17,7 +17,6 @@ export const Canvas = () => {
     '/proxy/api/cards/?page=1'
   );
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showLine, setShowLine] = useState(true);
   const [animationKey, setAnimationKey] = useState(0);
 
@@ -30,19 +29,8 @@ export const Canvas = () => {
   const initializePosition = useCardStore((state) => state.initializePosition);
   const resetPositions = useCardStore((state) => state.resetPositions);
 
-  const getCardColor = (index: number) => {
-    const colors = [
-      'bg-yellow-100',
-      'bg-pink-100',
-      'bg-green-100',
-      'bg-blue-100',
-    ];
-    return colors[index % colors.length];
-  };
-
   const loadCardsFromUrl = async (url: string | null) => {
     if (!url) return;
-    setIsLoadingMore(true);
 
     try {
       const response = await fetch(url);
@@ -60,7 +48,6 @@ export const Canvas = () => {
       console.error('Error al cargar tarjetas:', error);
     } finally {
       setIsInitialLoading(false);
-      setIsLoadingMore(false);
     }
   };
 
@@ -122,15 +109,15 @@ export const Canvas = () => {
     Math.max(...Object.values(positions).map((pos) => pos.y), 500) + 400;
 
   return (
-    <div className='min-h-screen w-full bg-black text-white flex flex-col'>
-      <header className='relative w-full flex justify-between items-center px-6 py-4 bg-black z-10'>
+    <div className='min-h-screen w-full bg-white text-gray-900 flex flex-col'>
+      <header className='relative w-full flex justify-between items-center px-6 py-4 bg-white z-10 shadow-sm border-b border-gray-200'>
         <Link
           to='/'
-          className='flex items-center gap-2 text-sm text-green-300 hover:text-green transition'
+          className='flex items-center gap-2 text-sm text-green-600 hover:text-green-700 transition'
         >
           <ArrowLeft size={16} /> Volver al Home
         </Link>
-        <h2 className='text-xl font-semibold tracking-tight text-emerald-400'>
+        <h2 className='text-xl font-semibold tracking-tight text-gray-500'>
           Canvas
         </h2>
         <button
@@ -138,7 +125,7 @@ export const Canvas = () => {
             resetPositions();
             setAnimationKey((prev) => prev + 1);
           }}
-          className='text-sm underline transition'
+          className='text-sm underline text-green-600 hover:text-green-700 transition'
         >
           Reset Canvas
         </button>
@@ -156,7 +143,7 @@ export const Canvas = () => {
         className='overflow-scroll flex-1 relative'
       >
         <div
-          className='bg-neutral-900 relative'
+          className='bg-[#fdfdfb] relative'
           style={{
             width: CARD_OFFSET_X * CARDS_PER_ROW + 60,
             height: canvasHeight,
@@ -193,25 +180,12 @@ export const Canvas = () => {
                       author={card.content?.author ?? 'Desconocido'}
                       x={pos.x}
                       y={pos.y}
-                      color={getCardColor(index)}
                       ref={(el) => {
                         cardRefs.current[id] = el;
                       }}
                     />
                   );
                 })}
-
-                {nextUrl && (
-                  <div className='absolute left-1/2 transform -translate-x-1/2 mt-10 bottom-10'>
-                    <button
-                      onClick={() => loadCardsFromUrl(nextUrl)}
-                      disabled={isLoadingMore}
-                      className='bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition'
-                    >
-                      {isLoadingMore ? 'Cargando...' : 'Cargar más'}
-                    </button>
-                  </div>
-                )}
               </>
             )}
           </DndContext>

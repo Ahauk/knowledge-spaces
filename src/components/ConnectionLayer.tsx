@@ -21,9 +21,9 @@ export const ConnectionLayer: React.FC<Props> = ({
 }) => {
   return (
     <svg
-      width='4000'
-      height='4000'
-      viewBox='0 0 4000 4000'
+      width='1500'
+      height='1500'
+      viewBox='0 0 1500 1500'
       className='absolute top-0 left-0 pointer-events-none -z-10'
     >
       {connections.map(({ from, to }, index) => {
