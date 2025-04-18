@@ -1,16 +1,21 @@
 import React from 'react';
 
-export type Position = {
+type Position = {
   x: number;
   y: number;
 };
 
-export type ConnectionLayerProps = {
-  positions: Record<string, Position>;
-  connections: { from: string; to: string }[];
+type Connection = {
+  from: string;
+  to: string;
 };
 
-export const ConnectionLayer: React.FC<ConnectionLayerProps> = ({
+type Props = {
+  positions: Record<string, Position>;
+  connections: Connection[];
+};
+
+export const ConnectionLayer: React.FC<Props> = ({
   positions,
   connections,
 }) => {
@@ -21,7 +26,7 @@ export const ConnectionLayer: React.FC<ConnectionLayerProps> = ({
       viewBox='0 0 4000 4000'
       className='absolute top-0 left-0 pointer-events-none -z-10'
     >
-      {connections.map(({ from, to }) => {
+      {connections.map(({ from, to }, index) => {
         const start = positions[from];
         const end = positions[to];
 
@@ -31,34 +36,31 @@ export const ConnectionLayer: React.FC<ConnectionLayerProps> = ({
         const startY = start.y + 40;
         const endX = end.x + 128;
         const endY = end.y + 40;
+
         const controlX = (startX + endX) / 2;
 
         const path = `M ${startX} ${startY} C ${controlX} ${startY}, ${controlX} ${endY}, ${endX} ${endY}`;
 
         return (
           <path
-            key={`${from}-${to}-${startX}-${startY}-${endX}-${endY}`}
+            key={index}
             d={path}
             fill='none'
             stroke='rgba(52, 211, 153, 1)'
             strokeWidth={2}
             strokeLinecap='round'
-            style={{
-              strokeDasharray: 1000,
-              strokeDashoffset: 1000,
-              animation: 'drawLine 1s ease forwards',
-            }}
-          />
+            strokeDasharray='6 6'
+          >
+            <animate
+              attributeName='stroke-dashoffset'
+              from='0'
+              to='12'
+              dur='1s'
+              repeatCount='indefinite'
+            />
+          </path>
         );
       })}
-
-      <style>{`
-        @keyframes drawLine {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-      `}</style>
     </svg>
   );
 };
