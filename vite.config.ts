@@ -12,6 +12,7 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+  base: '/knowledge-spaces/',
   css: {
     postcss: './postcss.config.js',
   },
