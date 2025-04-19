@@ -1,6 +1,9 @@
+const isDev = import.meta.env.DEV;
+const API_BASE = isDev ? '/proxy/api' : 'http://54.198.139.161/api';
+
 const API_URLS = {
-  cards: '/proxy/api/cards/',
-  notes: '/proxy/api/notes/',
+  cards: `${API_BASE}/cards/`,
+  notes: `${API_BASE}/notes/`,
 };
 
 async function fetchJson(url: string) {
@@ -38,10 +41,10 @@ function buildUrl(input: number | string): string {
   if (typeof input === 'number') {
     return `${API_URLS.cards}?page=${input}`;
   }
-  if (input.startsWith('/proxy') || input.startsWith('http')) {
+  if (input.startsWith(API_BASE) || input.startsWith('http')) {
     return input;
   }
-  return `/proxy${input}`;
+  return `${API_BASE}${input}`;
 }
 
 export async function getCards(input: number | string = 1): Promise<{

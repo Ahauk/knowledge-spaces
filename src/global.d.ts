@@ -5,7 +5,9 @@ declare module '*.css' {
 
 interface ImportMetaEnv {
   readonly VITE_APYHUB_API_KEY: string;
-  // Agrega aquí otras variables de entorno si las necesitas
+  readonly DEV: boolean;
+  readonly PROD: boolean;
+  readonly BASE_URL: string;
 }
 
 interface ImportMeta {
