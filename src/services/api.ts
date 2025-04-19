@@ -41,10 +41,10 @@ function buildUrl(input: number | string): string {
   if (typeof input === 'number') {
     return `${API_URLS.cards}?page=${input}`;
   }
-  if (input.startsWith(API_BASE) || input.startsWith('http')) {
+  if (input.startsWith('/api') || input.startsWith('http')) {
     return input;
   }
-  return `${API_BASE}${input}`;
+  return `${API_URLS.cards}${input}`;
 }
 
 export async function getCards(input: number | string = 1): Promise<{
