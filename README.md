@@ -119,6 +119,19 @@ El archivo se encuentra en:
 
 ---
 
+## 🌍 Despliegue en GitHub Pages
+
+La aplicación está desplegada públicamente en GitHub Pages y puede visitarse en:
+
+🔗 **[https://ahauk.github.io/knowledge-spaces](https://ahauk.github.io/knowledge-spaces)**
+
+El proceso de despliegue es automático mediante GitHub Actions. Cada vez que haces `push` a la rama `main`, se ejecuta el workflow en `.github/workflows/deploy.yml`, que:
+
+- Construye el proyecto con `vite build`
+- Publica el contenido de la carpeta `dist/` en la rama `gh-pages`
+
+---
+
 ## ✨ Cosas que haría con más tiempo
 
 ### Diseño y UX
