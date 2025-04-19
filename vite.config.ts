@@ -2,6 +2,8 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/knowledge-spaces/',
+  plugins: [react()],
   server: {
     proxy: {
       '/proxy': {
@@ -11,8 +13,6 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react()],
-  base: '/knowledge-spaces/',
   css: {
     postcss: './postcss.config.js',
   },
