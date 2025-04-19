@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card as CardComponent } from '../components/Card';
 import { generateAISummary } from '../services/ai';
@@ -41,7 +41,7 @@ export const Feed = () => {
     }
   };
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (!nextUrl) return;
     setIsLoading(true);
     try {
@@ -64,11 +64,11 @@ export const Feed = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [nextUrl, cards]);
 
   useEffect(() => {
     loadMore();
-  }, []);
+  }, [loadMore]);
 
   const handleBack = () => {
     setSelectedCard(null);

@@ -132,6 +132,7 @@ export const Canvas = () => {
   useEffect(() => {
     if (!loadMoreRef.current || !nextUrl) return;
 
+    const element = loadMoreRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
@@ -142,10 +143,10 @@ export const Canvas = () => {
       { threshold: 1 }
     );
 
-    observer.observe(loadMoreRef.current);
+    observer.observe(element);
 
     return () => {
-      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+      observer.unobserve(element);
     };
   }, [nextUrl]);
 
