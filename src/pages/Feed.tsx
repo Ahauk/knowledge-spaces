@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card as CardComponent } from '../components/Card';
 import { generateAISummary } from '../services/ai';
-import { CardAPI, getCardById } from '../services/api';
+import { API_URLS, CardAPI, getCardById } from '../services/api';
 
 export const Feed = () => {
   const [cards, setCards] = useState<CardAPI[]>([]);
@@ -10,7 +10,7 @@ export const Feed = () => {
   const [relatedCards, setRelatedCards] = useState<CardAPI[]>([]);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [nextUrl, setNextUrl] = useState<string | null>(
-    '/proxy/api/cards/?page=1'
+    `${API_URLS.cards}?page=1`
   );
   const [isLoading, setIsLoading] = useState(false);
 

@@ -91,3 +91,5 @@ export async function getAllCards(): Promise<CardAPI[]> {
 export function clearCardsCache() {
   cardsCache = null;
 }
+
+export { API_URLS };

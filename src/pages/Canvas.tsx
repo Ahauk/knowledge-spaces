@@ -18,7 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { ConnectionLayer } from '../components/ConnectionLayer';
-import { CardAPI } from '../services/api';
+import { API_URLS, CardAPI } from '../services/api';
 import { useCardStore } from '../store/useCardStore';
 
 const SortableCard = ({
@@ -71,7 +71,7 @@ const SortableCard = ({
 export const Canvas = () => {
   const [cards, setCards] = useState<CardAPI[]>([]);
   const [nextUrl, setNextUrl] = useState<string | null>(
-    '/proxy/api/cards/?page=1'
+    `${API_URLS.cards}?page=1`
   );
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -196,7 +196,7 @@ export const Canvas = () => {
           onClick={() => {
             resetPositions();
             setCards([]);
-            setNextUrl('/proxy/api/cards/?page=1');
+            setNextUrl(`${API_URLS.cards}?page=1`);
             setResetKey((k) => k + 1);
           }}
           className='text-sm underline text-green-600 hover:text-green-700 transition'
