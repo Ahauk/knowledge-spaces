@@ -1,7 +1,5 @@
 const isDev = import.meta.env.DEV;
-const API_BASE = isDev
-  ? '/proxy/api'
-  : 'https://corsproxy.io/?http://54.198.139.161/api';
+const API_BASE = isDev ? '/proxy/api' : 'http://54.198.139.161/api';
 
 const API_URLS = {
   cards: `${API_BASE}/cards/`,
