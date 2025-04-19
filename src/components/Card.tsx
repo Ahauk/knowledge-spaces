@@ -1,5 +1,4 @@
 import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { forwardRef, useEffect, useRef } from 'react';
 import { useCardStore } from '../store/useCardStore';
@@ -12,15 +11,11 @@ type Props = {
   description?: string;
   url?: string;
   author: string;
-  x: number;
-  y: number;
 };
 
 export const Card = forwardRef<HTMLDivElement, Props>(
-  ({ id, title, type, description, url, author, x, y }, ref) => {
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({
-      id,
-    });
+  ({ id, title, type, description, url, author }, ref) => {
+    const { attributes, listeners, setNodeRef } = useDraggable({ id });
     const updateHeight = useCardStore((s) => s.setCardHeight);
     const localRef = useRef<HTMLDivElement | null>(null);
 
@@ -33,58 +28,47 @@ export const Card = forwardRef<HTMLDivElement, Props>(
       });
 
       resizeObserver.observe(node);
-      updateHeight(id, node.offsetHeight); // Primer valor inicial
+      updateHeight(id, node.offsetHeight);
 
       return () => {
         resizeObserver.disconnect();
       };
     }, [id, updateHeight]);
 
-    const style = {
-      transform: CSS.Translate.toString(
-        transform ?? { x: 0, y: 0, scaleX: 1, scaleY: 1 }
-      ),
-      top: y,
-      left: x,
-    };
-
     return (
       <motion.div
         ref={(node) => {
           setNodeRef(node);
           localRef.current = node;
-
           if (typeof ref === 'function') {
             ref(node);
           } else if (ref && typeof ref === 'object') {
             ref.current = node;
           }
         }}
-        style={style}
-        className={`absolute bg-cardBackground rounded-cardRounded shadow-postit w-64 transition-transform select-text`}
+        className='w-full max-w-cardWidth h-cardHeight bg-cardBackground rounded-cardRounded shadow-postit transition-transform select-text flex flex-col'
+        {...listeners}
+        {...attributes}
       >
         {/* Header */}
-        <div
-          {...listeners}
-          {...attributes}
-          className='cursor-grab px-5 pt-5 select-none rounded-t-[32px]'
-        >
-          <h3 className='text-[14px] font-semibold text-gray-500 leading-snug break-words'>
+        <div className='px-5 pt-5 select-none border-b border-gray-200'>
+          <h3 className='text-[12px] font-semibold text-gray-500 leading-snug mb-1 break-words'>
             {title}
           </h3>
           <div className='h-px bg-gray-200 my-2' />
-          <p className='text-[11px] font-medium text-green-700 uppercase tracking-wider flex items-center gap-1'>
+          <p className='text-[11px] font-medium text-green-700 uppercase tracking-wide mb-2 flex items-center gap-1'>
             <span>{getIconForType(type)}</span>
             {type}
           </p>
         </div>
 
-        {/* Content */}
-        <div className='px-5 py-4 flex flex-col gap-3 text-left text-gray-800 text-[13px] leading-snug'>
+        {/* Scrollable content */}
+        <div className='flex-1 overflow-y-auto px-5 py-3 text-left text-gray-800 text-[12px] leading-snug scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-transparent hover:scrollbar-thumb-green-800'>
           {description && (
-            <p className='whitespace-pre-wrap break-words'>{description}</p>
+            <p className='whitespace-pre-wrap break-words mb-2'>
+              {description}
+            </p>
           )}
-
           {url && (
             <a
               href={url}
@@ -96,10 +80,11 @@ export const Card = forwardRef<HTMLDivElement, Props>(
               {url}
             </a>
           )}
+        </div>
 
-          <div className='border-t border-gray-200 pt-2 mt-2 flex items-center justify-between'>
-            <p className='text-[11px] text-gray-500 italic'>Autor: {author}</p>
-          </div>
+        {/* Footer */}
+        <div className='border-t border-gray-200 px-5 py-2 flex items-center justify-between'>
+          <p className='text-[11px] text-gray-500 italic'>Autor: {author}</p>
         </div>
       </motion.div>
     );
