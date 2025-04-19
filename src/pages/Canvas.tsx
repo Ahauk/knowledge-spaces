@@ -1,4 +1,18 @@
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -7,9 +21,52 @@ import { ConnectionLayer } from '../components/ConnectionLayer';
 import { CardAPI } from '../services/api';
 import { useCardStore } from '../store/useCardStore';
 
-const CARDS_PER_ROW = 6;
-const CARD_SPACING_Y = 300;
-const CARD_OFFSET_X = 350;
+const SortableCard = ({
+  card,
+  index,
+  cardRefs,
+}: {
+  card: CardAPI;
+  index: number;
+  cardRefs: React.RefObject<Record<string, HTMLDivElement | null>>;
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: String(card.id),
+    });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition ?? 'transform 200ms ease',
+    zIndex: transform ? 50 : 'auto',
+    scale: transform ? 1.03 : 1,
+  };
+
+  return (
+    <div
+      ref={(el) => {
+        cardRefs.current[String(card.id)] = el;
+        setNodeRef(el);
+      }}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`transition-all duration-200 ${
+        transform ? 'shadow-lg scale-[1.03]' : ''
+      }`}
+    >
+      <Card
+        id={String(card.id)}
+        index={index}
+        title={card.content?.title ?? 'Sin título'}
+        type={card.card_type}
+        description={card.content?.description}
+        url={card.content?.url}
+        author={card.content?.author ?? 'Desconocido'}
+      />
+    </div>
+  );
+};
 
 export const Canvas = () => {
   const [cards, setCards] = useState<CardAPI[]>([]);
@@ -17,20 +74,19 @@ export const Canvas = () => {
     '/proxy/api/cards/?page=1'
   );
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showLine, setShowLine] = useState(true);
-  const [animationKey, setAnimationKey] = useState(0);
-
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const positions = useCardStore((state) => state.positions);
-  const cardHeights = useCardStore((state) => state.cardHeights);
-  const setPosition = useCardStore((state) => state.setPosition);
-  const initializePosition = useCardStore((state) => state.initializePosition);
   const resetPositions = useCardStore((state) => state.resetPositions);
+  const [resetKey, setResetKey] = useState(0);
+
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
 
   const loadCardsFromUrl = async (url: string | null) => {
     if (!url) return;
+
+    setIsLoadingMore(true);
 
     try {
       const response = await fetch(url);
@@ -43,10 +99,15 @@ export const Canvas = () => {
         return [...prev, ...newCards];
       });
 
-      setNextUrl(data.next);
+      const proxiedNext = data.next
+        ? data.next.replace('http://54.198.139.161', '/proxy')
+        : null;
+
+      setNextUrl(proxiedNext);
     } catch (error) {
       console.error('Error al cargar tarjetas:', error);
     } finally {
+      setIsLoadingMore(false);
       setIsInitialLoading(false);
     }
   };
@@ -56,7 +117,7 @@ export const Canvas = () => {
   }, []);
 
   useEffect(() => {
-    const canvas = document.getElementById('canvas-scroll');
+    const canvas = canvasRef.current;
     if (!canvas) return;
 
     const handleScroll = () => {
@@ -69,33 +130,43 @@ export const Canvas = () => {
   }, []);
 
   useEffect(() => {
-    const positionsByColumn: number[] = Array(CARDS_PER_ROW).fill(100);
+    if (!loadMoreRef.current || !nextUrl) return;
 
-    cards.forEach((card, index) => {
-      const id = String(card.id);
-      if (positions[id]) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting) {
+          loadCardsFromUrl(nextUrl);
+        }
+      },
+      { threshold: 1 }
+    );
 
-      const col = index % CARDS_PER_ROW;
-      const x = CARD_OFFSET_X * col + 60;
-      const y = positionsByColumn[col];
+    observer.observe(loadMoreRef.current);
 
-      initializePosition(id, { x, y });
+    return () => {
+      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+    };
+  }, [nextUrl]);
 
-      const actualHeight = cardHeights[id] ?? 260;
-      positionsByColumn[col] += actualHeight + CARD_SPACING_Y;
-    });
-  }, [cards, positions, cardHeights, initializePosition]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { delta, active } = event;
-    const id = String(active.id);
-    const current = positions[id];
-    if (!current || !delta) return;
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
-    const newX = current.x + delta.x;
-    let newY = current.y + delta.y;
-    if (newY < 100) newY = 100;
-    setPosition(id, { x: newX, y: newY });
+    const oldIndex = cards.findIndex((c) => String(c.id) === active.id);
+    const newIndex = cards.findIndex((c) => String(c.id) === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(cards, oldIndex, newIndex);
+    setCards(reordered);
   };
 
   const connections = cards.flatMap((card) =>
@@ -105,12 +176,9 @@ export const Canvas = () => {
     }))
   );
 
-  const canvasHeight =
-    Math.max(...Object.values(positions).map((pos) => pos.y), 500) + 400;
-
   return (
-    <div className='min-h-screen w-full bg-white text-gray-900 flex flex-col'>
-      <header className='relative w-full flex justify-between items-center px-6 py-4 bg-white z-10 shadow-sm border-b border-gray-200'>
+    <div className='min-h-screen w-full bg-white text-gray-900 flex flex-col relative'>
+      <header className='sticky top-0 w-full flex justify-between items-center px-6 py-4 bg-white z-10 shadow-sm border-b border-gray-200'>
         <Link
           to='/'
           className='flex items-center gap-2 text-sm text-green-600 hover:text-green-700 transition'
@@ -123,7 +191,9 @@ export const Canvas = () => {
         <button
           onClick={() => {
             resetPositions();
-            setAnimationKey((prev) => prev + 1);
+            setCards([]);
+            setNextUrl('/proxy/api/cards/?page=1');
+            setResetKey((k) => k + 1);
           }}
           className='text-sm underline text-green-600 hover:text-green-700 transition'
         >
@@ -137,60 +207,52 @@ export const Canvas = () => {
         />
       </header>
 
-      <div
+      <main
+        className='flex-1 px-6 py-8 bg-[#fdfdfb] relative overflow-y-auto'
         id='canvas-scroll'
-        ref={containerRef}
-        className='overflow-scroll flex-1 relative'
       >
-        <div
-          className='bg-[#fdfdfb] relative'
-          style={{
-            width: CARD_OFFSET_X * CARDS_PER_ROW + 60,
-            height: canvasHeight,
-          }}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          <ConnectionLayer
-            positions={positions}
-            connections={connections}
-          />
-
-          <DndContext
-            onDragEnd={handleDragEnd}
-            key={animationKey}
-          >
-            {isInitialLoading ? (
-              <div className='absolute inset-0 flex items-center justify-center'>
-                <div className='animate-spin rounded-full h-12 w-12 border-t-4 border-emerald-400 border-opacity-50'></div>
+          {isInitialLoading ? (
+            <div className='flex justify-center items-center h-64'>
+              <div className='animate-spin rounded-full h-12 w-12 border-t-4 border-green-500 border-opacity-50'></div>
+            </div>
+          ) : (
+            <SortableContext
+              key={resetKey}
+              items={cards.map((c) => String(c.id))}
+              strategy={rectSortingStrategy}
+            >
+              <ConnectionLayer
+                cardRefs={cardRefs.current}
+                connections={connections}
+              />
+              <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-5 gap-y-6 px-canvas-x'>
+                {cards.map((card, index) => (
+                  <SortableCard
+                    key={String(card.id)}
+                    card={card}
+                    index={index}
+                    cardRefs={cardRefs}
+                  />
+                ))}
               </div>
-            ) : (
-              <>
-                {cards.map((card, index) => {
-                  const id = String(card.id);
-                  const pos = positions[id] ?? { x: 0, y: 0 };
-
-                  return (
-                    <Card
-                      key={id}
-                      id={id}
-                      index={index}
-                      title={card.content?.title ?? 'Sin título'}
-                      type={card.card_type}
-                      description={card.content?.description}
-                      url={card.content?.url}
-                      author={card.content?.author ?? 'Desconocido'}
-                      x={pos.x}
-                      y={pos.y}
-                      ref={(el) => {
-                        cardRefs.current[id] = el;
-                      }}
-                    />
-                  );
-                })}
-              </>
-            )}
-          </DndContext>
-        </div>
-      </div>
+              {isLoadingMore && (
+                <div className='flex justify-center items-center mt-6'>
+                  <div className='animate-spin rounded-full h-8 w-8 border-t-2 border-green-500 border-opacity-50'></div>
+                </div>
+              )}
+              <div
+                ref={loadMoreRef}
+                className='h-1'
+              />
+            </SortableContext>
+          )}
+        </DndContext>
+      </main>
     </div>
   );
 };

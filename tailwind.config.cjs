@@ -12,7 +12,17 @@ module.exports = {
       borderRadius: {
         cardRounded: '32px',
       },
+      width: {
+        cardWidth: '600px',
+      },
+      height: {
+        cardHeight: '300px',
+      },
+      padding: {
+        'canvas-x': '20px',
+        'canvas-y': '20px',
+      },
     },
   },
-  plugins: [],
+  plugins: [require('tailwind-scrollbar')({ nocompatible: true })],
 };
