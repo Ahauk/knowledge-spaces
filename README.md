@@ -102,6 +102,23 @@ Este proyecto fue desarrollado como parte de un _technical assessment_ para una 
 
 ---
 
+## 🧪 CI/CD con GitHub Actions
+
+Este proyecto incluye integración continua utilizando **GitHub Actions**. Cada vez que haces un `push` o abres un `pull request` en la rama `main`, se ejecuta automáticamente:
+
+- Instalación de dependencias
+- Lint con ESLint
+- Build de producción
+- Pruebas
+
+El archivo se encuentra en:
+
+```
+.github/workflows/ci.yml
+```
+
+---
+
 ## ✨ Cosas que haría con más tiempo
 
 ### Diseño y UX
@@ -133,8 +150,9 @@ Este proyecto fue desarrollado como parte de un _technical assessment_ para una 
 | Microinteracciones & tipografía   | 🔲 Parcial    |
 | Tests                             | 🔲 No incluye |
 | Accesibilidad avanzada            | 🔲 Parcial    |
-| Despliegue                        | 🔲 Por hacer  |
-| README técnico completo           | ✅ Ahora sí   |
+| CI/CD con GitHub Actions          | ✅ Completado |
+| Despliegue                        | ✅ Completado |
+| README técnico completo           | ✅ Completado |
 
 ---
 
