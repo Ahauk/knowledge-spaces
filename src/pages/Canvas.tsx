@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { ConnectionLayer } from '../components/ConnectionLayer';
@@ -83,38 +83,41 @@ export const Canvas = () => {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
-  const loadCardsFromUrl = async (url: string | null) => {
-    if (!url) return;
+  const loadCardsFromUrl = useCallback(
+    async (url: string | null) => {
+      if (!url) return;
 
-    setIsLoadingMore(true);
+      setIsLoadingMore(true);
 
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-      setCards((prev) => {
-        const newCards = data.results.filter(
-          (card: CardAPI) => !prev.some((existing) => existing.id === card.id)
-        );
-        return [...prev, ...newCards];
-      });
+        setCards((prev) => {
+          const newCards = data.results.filter(
+            (card: CardAPI) => !prev.some((existing) => existing.id === card.id)
+          );
+          return [...prev, ...newCards];
+        });
 
-      const proxiedNext = data.next
-        ? data.next.replace('http://54.198.139.161', '/proxy')
-        : null;
+        const proxiedNext = data.next
+          ? data.next.replace('http://54.198.139.161', '/proxy')
+          : null;
 
-      setNextUrl(proxiedNext);
-    } catch (error) {
-      console.error('Error al cargar tarjetas:', error);
-    } finally {
-      setIsLoadingMore(false);
-      setIsInitialLoading(false);
-    }
-  };
+        setNextUrl(proxiedNext);
+      } catch (error) {
+        console.error('Error al cargar tarjetas:', error);
+      } finally {
+        setIsLoadingMore(false);
+        setIsInitialLoading(false);
+      }
+    },
+    [setIsLoadingMore, setIsInitialLoading, setCards, setNextUrl]
+  );
 
   useEffect(() => {
     loadCardsFromUrl(nextUrl);
-  }, []);
+  }, [loadCardsFromUrl, nextUrl]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -148,7 +151,7 @@ export const Canvas = () => {
     return () => {
       observer.unobserve(element);
     };
-  }, [nextUrl]);
+  }, [nextUrl, loadCardsFromUrl]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
